@@ -30,12 +30,14 @@ var (
 	masterPool *simpleredis.ConnectionPool
 )
 
+
 func ListRangeHandler(rw http.ResponseWriter, req *http.Request) {
 	key := mux.Vars(req)["key"]
 	list := simpleredis.NewList(masterPool, key)
 	members := HandleError(list.GetAll()).([]string)
 	membersJSON := HandleError(json.MarshalIndent(members, "", "  ")).([]byte)
 	rw.Write(membersJSON)
+
 }
 
 func ListPushHandler(rw http.ResponseWriter, req *http.Request) {
@@ -89,7 +91,9 @@ func main() {
 	r.Path("/rpush/{key}/{value}").Methods("GET").HandlerFunc(ListPushHandler)
 	r.Path("/info").Methods("GET").HandlerFunc(InfoHandler)
 	r.Path("/env").Methods("GET").HandlerFunc(EnvHandler)
+
 	r.Path("/healthz").Methods("GET").HandlerFunc(HealthHandler)
+    r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./ui"))))
 
 	n := negroni.Classic()
 	n.UseHandler(r)
