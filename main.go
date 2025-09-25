@@ -93,8 +93,9 @@ func main() {
 	r.Path("/env").Methods("GET").HandlerFunc(EnvHandler)
 
 	r.Path("/healthz").Methods("GET").HandlerFunc(HealthHandler)
-    r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./ui"))))
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./public"))))
 
+	
 	n := negroni.Classic()
 	n.UseHandler(r)
 	n.Run(":3000")
