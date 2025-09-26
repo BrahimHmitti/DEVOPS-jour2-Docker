@@ -1,0 +1,14 @@
+# Version simplifiée pour le développement
+FROM golang:alpine
+
+# Installation des outils de base
+RUN apk add --no-cache git bash
+
+# Répertoire de travail
+WORKDIR /app
+
+# Exposer le port
+EXPOSE 3000
+
+# L'exécution est définie dans docker-compose.dev.yaml
+CMD ["go", "run", "main.go"]

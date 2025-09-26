@@ -2,13 +2,18 @@ services:
   guestbook:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
       - REDIS_HOST=redis
+      - AIR_INSTALL_PATH=/usr/local/bin
+    volumes:
+      - .:/app
     depends_on:
       - redis
+    # Définir explicitement la commande à exécuter pour éviter les problèmes d'entrypoint
+    command: ["go", "run", "main.go"]
   
   redis:
     image: redis:7-alpine

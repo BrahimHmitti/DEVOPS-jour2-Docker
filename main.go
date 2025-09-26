@@ -83,7 +83,12 @@ func HandleError(result interface{}, err error) (r interface{}) {
 }
 
 func main() {
-	masterPool = simpleredis.NewConnectionPoolHost(os.Getenv("REDIS_HOST") + ":6379")
+	// Utiliser localhost si REDIS_HOST n'est pas défini
+	redisHost := os.Getenv("REDIS_HOST")
+	if redisHost == "" {
+		redisHost = "localhost"
+	}
+	masterPool = simpleredis.NewConnectionPoolHost(redisHost + ":6379")
 	defer masterPool.Close()
 
 	r := mux.NewRouter()
@@ -93,9 +98,15 @@ func main() {
 	r.Path("/env").Methods("GET").HandlerFunc(EnvHandler)
 
 	r.Path("/healthz").Methods("GET").HandlerFunc(HealthHandler)
-	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir("./public"))))
-
 	
+	// Détecter si nous sommes dans un conteneur Docker (vérifier si /public existe)
+	publicDir := "./public"
+	if _, err := os.Stat("/public"); err == nil {
+		publicDir = "/public"  // Dans le conteneur, le chemin est /public
+	}
+	r.PathPrefix("/").Handler(http.StripPrefix("/", http.FileServer(http.Dir(publicDir))))
+
+
 	n := negroni.Classic()
 	n.UseHandler(r)
 	n.Run(":3000")
