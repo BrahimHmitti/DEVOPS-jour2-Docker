@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3002:3002"
+    environment:
+      - REDIS_HOST=redis
+      - PORT=3002
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    volumes:
+      - .:/app
+      - /app/__pycache__  # Exclure le cache Python
+    depends_on:
+      - redis
+    networks:
+      - flask-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - flask-network
+
+volumes:
+  redis_data:
+
+networks:
+  flask-network:
+    driver: bridge
